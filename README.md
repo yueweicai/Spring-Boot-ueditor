@@ -31,23 +31,30 @@
 #####     <version>1.1.2-offical</version>
 ##### </dependency>
 
-#### 在项目webapp中加入来自于ueditor组件的 controller.jsp 与 config.json文件。
-#### 修改controller.jsp文件，用于处理前端ueditor图片列表路径问题。
-
-#####   <%
-#####   request.setCharacterEncoding( "utf-8" );
-##### 	String action = request.getParameter("action");  
-##### 	String rootPath = application.getRealPath( "/" );
-##### 	String str = new ActionEnter( request, rootPath ).exec();
-##### 	if(action!=null && (action.equals("listfile") || action.equals("listimage"))){  
-#####       rootPath = rootPath.replace("\\", "/");  
-#####       str = str.replaceAll(rootPath, "/");  
-#####   }
-#####   out.write(str);
-#####   %>
+#### 在项目webapp中加入来自于ueditor组件的 config.json 文件。
 
 #### 修改 config.json ，将所有 ...UrlPrefix 属性值设置为服务器端项目的URL地址。
 #####  "imageUrlPrefix": "http://localhost:8080/editor",
 #####  "imagePathFormat": "/uploads/image/{yyyy}{mm}{dd}/{time}{rand:6}",
 #####  ......
 #### imageUrlPrefix的设置目的在于图片回传到前台项目中将自动在图片路径中加入服务器端域名。
+
+#### 加入一个Servlet作为 UEditor 组件的控制器，主要代码如下：
+##### @WebServlet("/ueditor")
+##### public class UEditorController extends HttpServlet{
+##### 	public void doPost(HttpServletRequest request,HttpServletResponse response){
+##### 		String action = request.getParameter("action");
+##### 		ServletContext context = request.getServletContext();
+##### 		String rootPath = context.getRealPath( "/" );
+##### 		String str = new ActionEnter( request, rootPath ).exec();
+##### 		if( action!=null && (action.equals("listfile") || action.equals("listimage") ) ){  
+##### 	        rootPath = rootPath.replace("\\", "/");  
+##### 	        str = str.replaceAll(rootPath, "/");  
+##### 	  }
+##### 		PrintWriter out = response.getWriter();
+##### 		out.write(str);
+##### 		out.flush();
+##### 		out.close();
+##### 	}
+#####   ......
+##### }
